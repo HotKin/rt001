@@ -11,18 +11,24 @@ import java.util.Map.Entry;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.collections4.Get;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import com.rt.core.BodyReaderHttpServletRequestWrapper;
 import com.rt.core.RequestMethod;
-import com.yixing.common.BodyReaderHttpServletRequestWrapper;
+
+import cn.hutool.core.date.DateUtil;
 
 @Component
 public class MyInterceptor implements HandlerInterceptor {
+	
+	public final static Logger LOGGER = LoggerFactory.getLogger(MyInterceptor.class);
 
 	private HttpServletRequest request;
 
@@ -38,6 +44,10 @@ public class MyInterceptor implements HandlerInterceptor {
 		}
 		this.response = httpServletResponse;
 		String requestMethod = request.getMethod();
+		LOGGER.info("Action report------------------{}------------------",DateUtil.now());
+		LOGGER.info("Url         : {} {}",requestMethod,request.getRequestURI());
+		LOGGER.info("Controller  : {}");
+		LOGGER.info("Method      : {}");
 		if (RequestMethod.isPG(requestMethod)) {
 			switch (requestMethod) {
 			case "GET":
@@ -50,6 +60,7 @@ public class MyInterceptor implements HandlerInterceptor {
 				break;
 			}
 		}
+		LOGGER.info("--------------------------------------------------------------------------------");
 		return true;
 	}
 	
@@ -57,15 +68,16 @@ public class MyInterceptor implements HandlerInterceptor {
 		Map<String, String> paramMaps=getParameterStringMap();
 		paramMaps.forEach((k,v)->{
 			System.out.println("k="+k+",v="+v);
+			LOGGER.info("Parameter   : {}={}",k,v);
 		});
 	}
 	
 	public void post() {
-		JSONObject paramJson = getJson((HttpServletRequest) request);
-		System.out.println("POST 请求参数："+paramJson.toJSONString());
+		Object paramJson = getJson((HttpServletRequest) request);
+		LOGGER.info("Parameter   : {}",paramJson);
 	}
 	
-	public JSONObject getJson(HttpServletRequest request) {
+	public Object getJson(HttpServletRequest request) {
         String json = "";
         BufferedReader br;
         try {
@@ -80,17 +92,29 @@ public class MyInterceptor implements HandlerInterceptor {
             if(StringUtils.isEmpty(json)) {
             	json="{}";
             }
-            System.out.println("json=" + json);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        JSONObject jsonObject=new JSONObject();
+        boolean isJSON=isJsonValid(json);
+        if(!isJSON) {
+        	return json;
+        }else {
+        	JSONObject jsonObject=JSONObject.parseObject(json);
+        	return jsonObject;
+        }
+    }
+	
+	public boolean isJsonValid(String test) {
         try {
-        	jsonObject=JSONObject.parseObject(json);
-		} catch (ClassCastException e) {
-			System.out.println("转换失败。。。");
-		}
-        return jsonObject;
+            JSONObject.parseObject(test);
+        } catch (JSONException ex) {
+            try {
+                JSONObject.parseArray(test);
+            } catch (JSONException ex1) {
+                return false;
+            }
+        }
+        return true;
     }
 	
 	private Map<String, Object> getParameterMap() {

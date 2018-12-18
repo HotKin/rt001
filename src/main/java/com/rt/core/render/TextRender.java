@@ -3,6 +3,8 @@ package com.rt.core.render;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import com.rt.core.ContentType;
+
 public class TextRender extends Render{
 
 protected static final String DEFAULT_CONTENT_TYPE = "text/plain";
