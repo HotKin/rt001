@@ -2,10 +2,12 @@ package com.rt.core;
 
 import com.rt.commons.utils.RequestUtils;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
-public class RtController extends Controller {
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+public class RtController{
 	
 
     /**
@@ -83,75 +85,6 @@ public class RtController extends Controller {
     }
 
 
-    protected HashMap<String, Object> flash;
-
-    public Controller setFlashAttr(String name, Object value) {
-        if (flash == null) {
-            flash = new HashMap<>();
-        }
-
-        flash.put(name, value);
-        return this;
-    }
-
-
-    public Controller setFlashMap(Map map) {
-        if (map == null) {
-            throw new NullPointerException("map is null");
-        }
-        if (flash == null) {
-            flash = new HashMap<>();
-        }
-
-        flash.putAll(map);
-        return this;
-    }
-
-
-    public <T> T getFlashAttr(String name) {
-        return flash == null ? null : (T) flash.get(name);
-    }
-
-
-    public HashMap<String, Object> getFlashAttrs() {
-        return flash;
-    }
-
-
-    private HashMap<String, Object> jwtMap;
-
-    public Controller setJwtAttr(String name, Object value) {
-        if (jwtMap == null) {
-            jwtMap = new HashMap<>();
-        }
-
-        jwtMap.put(name, value);
-        return this;
-    }
-
-
-    public Controller setJwtMap(Map map) {
-        if (map == null) {
-            throw new NullPointerException("map is null, u show invoke setJwtAttr() before. ");
-        }
-        if (jwtMap == null) {
-            jwtMap = new HashMap<>();
-        }
-
-        jwtMap.putAll(map);
-        return this;
-    }
-
-
-    public <T> T getJwtAttr(String name) {
-        return jwtMap == null ? null : (T) jwtMap.get(name);
-    }
-
-
-    public HashMap<String, Object> getJwtAttrs() {
-        return jwtMap;
-    }
-
     /**
      * 获取当前网址
      *
@@ -166,4 +99,16 @@ public class RtController extends Controller {
                 : String.format("%s://%s%s%s", req.getScheme(), req.getServerName(), ":" + port, req.getContextPath());
 
     }
+    
+	HttpServletRequest getRequest() {
+		return getServletRequestAttributes().getRequest();
+	}
+	
+	HttpServletResponse getResponse() {
+		return getServletRequestAttributes().getResponse();
+	}
+	
+	ServletRequestAttributes getServletRequestAttributes() {
+		return (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+	}
 }

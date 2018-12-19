@@ -1,10 +1,5 @@
 package com.rt.web;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,24 +15,26 @@ import com.rt.service.user.UserInfoService;
 @RestController
 @RequestMapping("/")
 public class IndexController extends RtController {
+
 	public final static Logger LOGGER = LoggerFactory.getLogger(IndexController.class);
 	
 	@Autowired
 	UserInfoService userInfoService;
 	
 	@RequestMapping(value="/index",method=RequestMethod.GET)
-	public void index() {
+	public String index() {
 		LOGGER.info("","","","");
-		renderText("hello spring boot.");
+		//renderText("hello spring boot.");
+		return "123456";
 	}
 	
 	@RequestMapping(value="/byId",method=RequestMethod.POST)
-	public void findById() {
+	public String findById() {
 		if(isMoblieBrowser()) {
 			UserInfo userInfo=userInfoService.findById(1);
-			renderJson(JSON.toJSONString(userInfo));
+			return JSON.toJSONString(userInfo);
 		}else {
-			renderText("普通浏览器");
+			return "普通浏览器";
 		}
 	}
 }

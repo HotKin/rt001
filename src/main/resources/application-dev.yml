@@ -10,14 +10,14 @@ spring:
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
-    dbcp2:
-      max-idle: 1
-      max-total: 20
-      max-wait-millis: 60000
-      initial-size: 1   
-    
-    
-    
+    dbcp2:      min-idle: 5 #最小链接数#
+      initial-size: 5 #初始链接数#
+      max-total: 20 #最大链接数#
+      max-wait-millis: 60000 #超时等待时间#
+  jpa:
+    show-sql: true
+logging:
+  level:    org.hibernate.type.descriptor.sql.BasicBinder: trace
     
     
     

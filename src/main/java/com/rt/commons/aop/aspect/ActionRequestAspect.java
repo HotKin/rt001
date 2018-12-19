@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
@@ -44,7 +46,7 @@ public class ActionRequestAspect {
     public void action() {
     }
     
-	@Before("execution(* com.rt.web.*Controller.*(..))")
+    @Before("execution(* com.rt.web.*Controller.*(..))")
 	public void before(JoinPoint pjp) {
 		RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
@@ -118,6 +120,90 @@ public class ActionRequestAspect {
 			throw new RuntimeException(ex);
 		}
 	}
+    
+/*	@Around("execution(* com.rt.web.*Controller.*(..))")
+	public String around(ProceedingJoinPoint pjp) {
+		RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes sra = (ServletRequestAttributes) ra;
+        HttpServletRequest request = sra.getRequest();
+        String Controller=pjp.getSignature().getDeclaringTypeName();
+        String mt=pjp.getSignature().getName();
+
+        String url = request.getRequestURL().toString();
+        String method = request.getMethod();
+        String uri = request.getRequestURI();
+        
+        String contentType=request.getContentType();
+        
+        
+        StringBuilder sb = new StringBuilder();
+        sb
+        .append("Action report -------- ").append(DateUtil.now()).append(" --------------------------\n")
+        .append("RequestURL  : ").append(url).append("\n")
+        .append("Url         : ").append(method).append(" ").append(uri).append("\n");
+		Enumeration<String> e = request.getParameterNames();
+		if (e.hasMoreElements()) {
+			sb.append("Parameter   : ");
+			while (e.hasMoreElements()) {
+				String name = e.nextElement();
+				String[] values = request.getParameterValues(name);
+				if (values.length == 1) {
+					sb.append(name).append("=");
+					if (values[0] != null && values[0].length() > maxOutputLengthOfParaValue) {
+						sb.append(values[0].substring(0, maxOutputLengthOfParaValue)).append("...");
+					} else {
+						sb.append(values[0]);
+					}
+				}
+				else {
+					sb.append(name).append("[]={");
+					for (int i=0; i<values.length; i++) {
+						if (i > 0)
+							sb.append(",");
+						sb.append(values[i]);
+					}
+					sb.append("}");
+				}
+				sb.append("  ");
+			}
+			sb.append("\n");
+		}else {
+			switch (method) {
+			case "GET":
+				Map<String, String> paramMaps=getParameterStringMap(request);
+				sb.append("Parameter   : ");
+				paramMaps.forEach((k,v)->{
+					sb.append(k).append("=").append(v).append("\t");
+				});
+				sb.append("\n");
+				break;
+			case "POST":
+				Object paramJson = getJson(request);
+				sb.append("Parameter   : ").append(paramJson).append("\n");
+				break;
+			default:
+				break;
+			}
+		}
+		sb
+		.append("Controller  : ").append(Controller).append("\n")
+		.append("Method      : ").append(mt).append("\n");
+		String result=null;
+		try {
+			result=(String) pjp.proceed();
+			sb.append("Result      : ").append(result).append("\n");
+		} catch (Throwable e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		sb.append("---------------------------------------------------------------------\n");
+		try {
+			writer.write(sb.toString());
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+		return result;
+	}*/
 	
 	public Object getJson(HttpServletRequest request) {
         String json = "";
